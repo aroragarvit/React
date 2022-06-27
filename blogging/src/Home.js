@@ -3,6 +3,11 @@ import { useState , useEffect } from "react";
 const Home  = () => {
     // using react hook set is like a function
     const [name,set]=useState("Garvit")
+
+    const [ispending,setpending]=useState(true)
+
+    const [error,seterror]=useState(null)
+
     const click=(name,e)=>{
         console.log("hello"+name ,e)
         set("Arora")
@@ -17,7 +22,7 @@ const Home  = () => {
    //     ]
    // ) 
 
-    const [blogs,setblog]=useState()
+    const [blogs,setblog]=useState(null)
     
 
     const handledelete=(id)=>{
@@ -26,15 +31,24 @@ const Home  = () => {
     }
      
     useEffect(()=>{        //  every time rerendering rerendering  occurs this function runs like when we start our website and then when the state of data is changed 
-         fetch("http://localhost:8000/blogs")// we can use dependency array to check when we want the function to run 
+        setTimeout(()=>{ 
+        fetch("http://localhost:8000/blogs")// we can use dependency array to check when we want the function to run 
         .then(res=>{
+            if(!res.ok){
+                throw Error ("Unable to fetch the data")
+            }
             return res.json();
         })
         .then(data=>{
             console.log(data)
-            setblog(data)
+            setblog(data)         // we are not returning data rather we are changing state of data 
+            setpending(false)
         })
-
+        .catch((err=>{
+            console.log(err.message)
+            seterror(error.message)
+        }))
+    },1000)
 
     },[])  // we have added dependency array so infinite loop is not happening otherwise it would have happened if we add set state in this function
    
@@ -63,8 +77,11 @@ const Home  = () => {
                 )
             }
         */ }
-        <Bloglist blogs = {blogs}  handledelete={handledelete}/>
-        <Bloglist blogs={blogs.filter((blog)=>blog.author=="mario")}></Bloglist>
+        {error && <div>{error}</div>}
+       {ispending&& <div> loading......</div>} 
+       { blogs && <Bloglist blogs = {blogs}  handledelete={handledelete}/>}  {/* put condition so that bloglist appears only after blogs are retrived and promise is resolved  */}
+       {blogs&& <Bloglist blogs={blogs.filter((blog)=>blog.author=="mario")}></Bloglist>}  {/* In handle delete state is changed so if delete mario blog this blog will also be deleted */ }
+    
 
 
 
